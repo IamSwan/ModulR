@@ -1,11 +1,16 @@
 {
-  "name": "EpiFramework",
+  "name": "ModulR",
   "tree": {
     "$className": "DataModel",
-
+    "$ignoreUnknownInstances": true,
     "ReplicatedStorage": {
-      "EpiFramework": {
-        "$path": "src/EpiFramework"
+      "ModulR": {
+        "$path": "src/ModulR"
+      }
+    },
+    "ServerScriptService": {
+      "ModulRTest": {
+        "$path": "src/ServerTests"
       }
     }
   }
