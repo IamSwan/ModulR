@@ -1,11 +1,14 @@
 --|| ModulR ||--
 
+--|| Dependencies ||--
+local ModulRInterfaces = require(script.Parent.Interfaces)
+
 --|| Event Bus Module ||--
 local ModulREventBus = {}
 ModulREventBus.__index = ModulREventBus
 
 --|| Private Attributes ||--
-local bus = {}
+local subscribers = {}
 
 --|| Destructor ||--
 function ModulREventBus:Destroy()
@@ -13,39 +16,43 @@ function ModulREventBus:Destroy()
 end
 
 --|| Public Methods ||--
-function ModulREventBus:Subscribe(eventName: string, callback: () -> any)
-    if not bus[eventName] then
-        bus[eventName] = {}
+function ModulREventBus:Subscribe(eventName: string, subscriberService: ModulRInterfaces.Service, callback: (any) -> any)
+    if not subscribers[eventName] then
+        subscribers[eventName] = {}
     end
-    table.insert(bus[eventName], callback)
+
+    if not subscribers[eventName][subscriberService] then
+        subscribers[eventName][subscriberService] = {}
+    end
+
+    table.insert(subscribers[eventName][subscriberService], callback)
 end
 
-function ModulREventBus:Unsubscribe(eventName: string): boolean
-    if not bus[eventName] then
-        return false
+function ModulREventBus:Unsubscribe(eventName: string, subscriberService: ModulRInterfaces.Service)
+    if not subscribers[eventName] or not subscribers[eventName][subscriberService] then
+        return
     end
-    bus[eventName] = nil
-    return true
-end
 
-function ModulREventBus:Publish(eventName: string, ...)
-    if not bus[eventName] then
-        return false
-    end
-    for _, callback in ipairs(bus[eventName]) do
-        callback(...)
-    end
-    return true
+    subscribers[eventName][subscriberService] = nil
 end
 
 function ModulREventBus:Clear()
-    bus = {}
+    subscribers = {}
 end
 
-function ModulREventBus:GetEvents(): {[string]: () -> any}
-    return bus
+function ModulREventBus:Broadcast(eventName)
+    if not subscribers[eventName] then
+        return
+    end
+
+    for service, callbacks in pairs(subscribers[eventName]) do
+        for _, callback in ipairs(callbacks) do
+            local success, err = pcall(callback)
+            if not success then
+                warn("Error in event callback for '" .. eventName .. "': " .. tostring(err))
+            end
+        end
+    end
 end
 
-function ModulREventBus:HasEvent(eventName: string): boolean
-    return bus[eventName] ~= nil
-end
+return ModulREventBus

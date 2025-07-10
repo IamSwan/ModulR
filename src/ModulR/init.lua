@@ -1,24 +1,16 @@
 --|| ModulR ||--
 
 --|| Dependencies ||--
-local EventBus = require(script.EventBus)
+local eventBus = require(script.EventBus)
+local ModulRInterfaces = require(script.Interfaces)
 
 --|| Main module ||--
 local ModulRCore = {}
 ModulRCore.__index = ModulRCore
 
---|| Interfaces ||--
-type Service = {
-    Name: string,
-    Initialize: () -> any,
-    Destroy: () -> any,
-    Server: {}?,
-    Client: {}?
-}
-
 --|| Private Attributes ||--
-local Services = {}
-local Locked = false
+local services = {}
+local locked = false
 
 --|| Constructor ||--
 function ModulRCore.new()
@@ -28,41 +20,40 @@ end
 
 --|| Destructor ||--
 function ModulRCore:Destroy()
-    for _, service in pairs(Services) do
+    for _, service in pairs(services) do
         if not service.Destroy then continue end
         service:Destroy()
     end
-    Services = {}
+    services = {}
 end
 
 --|| Public Methods ||--
 function ModulRCore:Initialize()
-    Locked = true -- Prevent further edits after init
-    self.EventBus = EventBus.new()
+    locked = true -- Prevent further edits after init
     return self
 end
 
-function ModulRCore:GetService(serviceName: string): Service
-    if not Services[serviceName] then
+function ModulRCore:GetService(serviceName: string): ModulRInterfaces.Service
+    if not services[serviceName] then
         error("Service '" .. serviceName .. "' does not exist.")
     end
 
-    return Services[serviceName]
+    return services[serviceName]
 end
 
-function ModulRCore:AddService(serviceName: string)
-    if Locked then
+function ModulRCore:AddService(serviceName: string, module: ModulRInterfaces.Service)
+    if locked then
         error("Cannot add services after initialization.")
     end
 
-    if Services[serviceName] then
+    if services[serviceName] then
         error("Service '" .. serviceName .. "' already exists.")
     end
 
     local modulePath = script.Services[serviceName]
 
     if not modulePath then
-        error("Service '" .. serviceName .. "' not found in script.Services.")
+        error("Service '" .. serviceName .. "' not found in script.services.")
     end
 
     local serviceModule = require(modulePath)
@@ -70,7 +61,17 @@ function ModulRCore:AddService(serviceName: string)
         error("Service '" .. serviceName .. "' must be a table with an Initialize method.")
     end
 
-    Services[serviceName] = serviceModule:Initialize()
+    serviceModule.Name = serviceName
+    serviceModule.Initialize = serviceModule.Initialize or function() end
+    serviceModule.Destroy = serviceModule.Destroy or function() end
+    services[serviceName] = serviceModule:Initialize()
+end
+
+function ModulRCore:GetEventBus()
+    if not eventBus then
+        error("Event bus is not initialized. Call Initialize() first.")
+    end
+    return eventBus
 end
 
 --|| Return ||--
