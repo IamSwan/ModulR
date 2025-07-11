@@ -1,5 +1,7 @@
 local ModulR = require(game.ReplicatedStorage.ModulR)
 
+ModulR:AddService("DialogueService", require(game.ReplicatedStorage.ModulR.Services.DialogueService))
+ModulR:AddService("NpcService", require(game.ReplicatedStorage.ModulR.Services.NpcService))
 ModulR:AddService("LevelService", require(game.ReplicatedStorage.ModulR.Services.LevelService))
 ModulR:AddService("CombatService", require(game.ReplicatedStorage.ModulR.Services.CombatService))
 ModulR:AddService("MovementService", require(game.ReplicatedStorage.ModulR.Services.MovementService))
