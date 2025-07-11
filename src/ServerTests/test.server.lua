@@ -18,8 +18,10 @@ local combatService = ModulR:GetService("CombatService")
 combatRemote.OnServerEvent:Connect(function(player, action, ...)
     if action == "Attack" then
         local damage = select(1, ...)
-        combatService:Attack(player, damage)
+        combatService:Attack(player.Character or player.CharacterAdded:Wait(), damage)
     elseif action == "Block" then
-        combatService:Block(player)
+        combatService:Block(player.Character or player.CharacterAdded:Wait())
+    elseif action == "BlockEnd" then
+        combatService:BlockEnd(player.Character or player.CharacterAdded:Wait())
     end
 end)

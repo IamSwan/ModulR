@@ -13,13 +13,13 @@ uis.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         CombatService:Attack()
-    elseif input.KeyCode == Enum.KeyCode.F then
+    end
+    if input.KeyCode == Enum.KeyCode.F then
         CombatService:Block()
     end
 end)
 
 uis.InputEnded:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.F then
         CombatService:BlockEnd()
     end
