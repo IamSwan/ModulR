@@ -3,6 +3,7 @@ local ModulR = require(game.ReplicatedStorage.ModulR)
 
 --|| Dependencies ||--
 local ModulRInterfaces = require(script.Parent.Parent.Interfaces)
+local PlayerService = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 --|| Module ||--
@@ -12,11 +13,31 @@ local LevelService: ModulRInterfaces.Service = {
     Shared = {}
 }
 
-function LevelService:Initialize()
-    if not RunService:IsServer() then
-        error("LevelService can only be initialized on the server.")
-    end
+local function onPlayerAdded(player: Player)
+    player:SetAttribute("Level", 1)
+    player:SetAttribute("Experience", 0)
+    player:SetAttribute("NeededExperience", 1000)
+    player:GetAttributeChangedSignal("Experience"):Connect(function()
+        if LevelService.Server:CanLevelUp(player) then
+            LevelService.Server:LevelUp(player)
+            LevelService.Shared:LogLevelChange(player, player:GetAttribute("Level"))
+        end
+    end)
+    player:GetAttributeChangedSignal("NeededExperience"):Connect(function()
+        if LevelService.Server:CanLevelUp(player) then
+            LevelService.Server:LevelUp(player)
+            LevelService.Shared:LogLevelChange(player, player:GetAttribute("Level"))
+        end
+    end)
+end
 
+function LevelService:Initialize()
+    if RunService:IsServer() then
+        for _, player in ipairs(PlayerService:GetPlayers()) do
+            onPlayerAdded(player)
+        end
+        PlayerService.PlayerAdded:Connect(onPlayerAdded)
+    end
     ModulR:GetEventBus():Broadcast("LevelServiceInit")
     return self
 end
@@ -27,17 +48,19 @@ function LevelService:Destroy()
 end
 
 function LevelService.Server:GetExp(player: Player)
-    print(player.Name)
-    return 100
+    return player:GetAttribute("Experience")
 end
 
 function LevelService.Server:SetExp(player: Player, exp: number)
-    print(player.Name .. " has been set to " .. exp .. " experience points.")
+    player:SetAttribute("Experience", exp)
 end
 
 function LevelService.Server:GetNeededExp(player: Player)
-    print("Max experience for " .. player.Name .. " is 1000.")
-    return 1000 -- Example max experience
+    return player:GetAttribute("NeededExperience")
+end
+
+function LevelService.Server:SetNeededExp(player: Player, neededExp: number)
+    player:SetAttribute("NeededExperience", neededExp)
 end
 
 function LevelService.Server:CanLevelUp(player: Player)
@@ -46,9 +69,19 @@ function LevelService.Server:CanLevelUp(player: Player)
     return currentExp >= neededExp
 end
 
-function LevelService.Client:RequestExp(player: Player)
-    print("Client requested experience for " .. player.Name)
-    -- Here you would typically send a request to the server to get the player's experience.
+function LevelService.Server:LevelUp(player: Player)
+    local newNeededExp = self:GetNeededExp(player) * 1.1
+    local newExp = self:GetNeededExp(player) - self:GetExp(player)
+    self:SetExp(player, newExp)
+    self:SetNeededExp(player, newNeededExp)
+end
+
+function LevelService.Client:FetchExp(player: Player)
+    return player:GetAttribute("Experience")
+end
+
+function LevelService.Client:FetchNeededExp(player: Player)
+    return player:GetAttribute("NeededExperience")
 end
 
 function LevelService.Shared:LogLevelChange(player: Player, level: number)
