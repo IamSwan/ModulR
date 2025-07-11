@@ -2,9 +2,11 @@ local ModulR = require(game.ReplicatedStorage.ModulR)
 
 ModulR:AddService("LevelService", require(game.ReplicatedStorage.ModulR.Services.LevelService))
 ModulR:AddService("CombatService", require(game.ReplicatedStorage.ModulR.Services.CombatService))
+ModulR:AddService("MovementService", require(game.ReplicatedStorage.ModulR.Services.MovementService))
 ModulR:Initialize()
 
 local CombatService = ModulR:GetService("CombatService")
+local MovementService = ModulR:GetService("MovementService")
 
 -- Example usage of CombatService
 local uis = game:GetService("UserInputService")
@@ -16,6 +18,17 @@ uis.InputBegan:Connect(function(input, gameProcessed)
     end
     if input.KeyCode == Enum.KeyCode.F then
         CombatService:Block()
+    end
+    if input.KeyCode == Enum.KeyCode.Space then
+        local humanoid = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if humanoid.FloorMaterial == Enum.Material.Air then
+                MovementService:DoubleJump()
+            end
+        end
+    end
+    if input.KeyCode == Enum.KeyCode.Q then
+        MovementService:Dash()
     end
 end)
 

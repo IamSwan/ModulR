@@ -2,6 +2,7 @@ local ModulR = require(game.ReplicatedStorage.ModulR)
 
 ModulR:AddService("LevelService", require(game.ReplicatedStorage.ModulR.Services.LevelService))
 ModulR:AddService("CombatService", require(game.ReplicatedStorage.ModulR.Services.CombatService))
+ModulR:AddService("StatusService", require(game.ReplicatedStorage.ModulR.Services.StatusService))
 ModulR:Initialize()
 
 local remoteFolder = Instance.new("Folder")
@@ -13,6 +14,7 @@ combatRemote.Name = "CombatRemote"
 combatRemote.Parent = remoteFolder
 
 local combatService = ModulR:GetService("CombatService")
+local StatusService = ModulR:GetService("StatusService")
 
 -- Example usage of CombatService
 combatRemote.OnServerEvent:Connect(function(player, action, ...)
@@ -24,4 +26,8 @@ combatRemote.OnServerEvent:Connect(function(player, action, ...)
     elseif action == "BlockEnd" then
         combatService:BlockEnd(player.Character or player.CharacterAdded:Wait())
     end
+end)
+
+game.Players.PlayerAdded:Connect(function(player)
+    StatusService:ApplyStatusEffect(player, "Stunned", 5)
 end)
