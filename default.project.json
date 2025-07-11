@@ -12,6 +12,11 @@
       "ModulRTest": {
         "$path": "src/ServerTests"
       }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "$path": "src/ClientTests"
+      }
     }
   }
 }
