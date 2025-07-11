@@ -8,4 +8,8 @@ function test:Initialize()
     return self
 end
 
+function test:TestMethod()
+    print("TestMethod called from TestService")
+end
+
 return test

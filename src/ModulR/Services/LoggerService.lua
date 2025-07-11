@@ -18,4 +18,8 @@ function LoggerService:Initialize()
     return self
 end
 
+function LoggerService:ForceLog(message: string)
+    print("[LoggerService] - " .. message)
+end
+
 return LoggerService
