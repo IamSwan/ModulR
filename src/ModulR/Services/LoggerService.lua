@@ -8,13 +8,13 @@ local ModulRInterfaces = require(script.Parent.Parent.Interfaces)
 local LoggerService: ModulRInterfaces.Service = {}
 
 function LoggerService:Initialize()
-    self.Name = "LoggerService"
-    self.Server = {}
-    self.Client = {}
-
-    ModulR:GetEventBus():Subscribe("Info1", self, function()
-        print("[LoggerService] - Info1 event received.")
+    ModulR:GetEventBus():Subscribe("LoggerServiceInit", self, function()
+        print("[LoggerService] - LoggerServiceInit event received.")
     end)
+    ModulR:GetEventBus():Subscribe("TestServiceInit", self, function()
+        print("[LoggerService] - TestServiceInit event received.")
+    end)
+    ModulR:GetEventBus():Broadcast("LoggerServiceInit")
     return self
 end
 

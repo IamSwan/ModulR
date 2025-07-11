@@ -30,6 +30,16 @@ end
 --|| Public Methods ||--
 function ModulRCore:Initialize()
     locked = true -- Prevent further edits after init
+    for index, value in pairs(services) do
+        if not value.Initialize then
+            error("Service '" .. index .. "' does not have an Initialize method.")
+        end
+
+        local success, err = pcall(value.Initialize, value)
+        if not success then
+            warn("Failed to initialize service '" .. index .. "': " .. tostring(err))
+        end
+    end
     return self
 end
 
@@ -37,7 +47,6 @@ function ModulRCore:GetService(serviceName: string): ModulRInterfaces.Service
     if not services[serviceName] then
         error("Service '" .. serviceName .. "' does not exist.")
     end
-
     return services[serviceName]
 end
 
@@ -64,7 +73,7 @@ function ModulRCore:AddService(serviceName: string, module: ModulRInterfaces.Ser
     serviceModule.Name = serviceName
     serviceModule.Initialize = serviceModule.Initialize or function() end
     serviceModule.Destroy = serviceModule.Destroy or function() end
-    services[serviceName] = serviceModule:Initialize()
+    services[serviceName] = serviceModule
 end
 
 function ModulRCore:GetEventBus()
