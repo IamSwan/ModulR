@@ -59,21 +59,14 @@ function ModulRCore:AddService(serviceName: string, module: ModulRInterfaces.Ser
         error("Service '" .. serviceName .. "' already exists.")
     end
 
-    local modulePath = script.Services[serviceName]
-
-    if not modulePath then
-        error("Service '" .. serviceName .. "' not found in script.services.")
+    if type(module) ~= "table" or not module.Initialize or not module.Destroy then
+        error("Invalid service module. Must be a table with Initialize and Destroy methods.")
     end
 
-    local serviceModule = require(modulePath)
-    if type(serviceModule) ~= "table" or not serviceModule.Initialize then
-        error("Service '" .. serviceName .. "' must be a table with an Initialize method.")
-    end
-
-    serviceModule.Name = serviceName
-    serviceModule.Initialize = serviceModule.Initialize or function() end
-    serviceModule.Destroy = serviceModule.Destroy or function() end
-    services[serviceName] = serviceModule
+    module.Name = serviceName
+    module.Initialize = module.Initialize or function() end
+    module.Destroy = module.Destroy or function() end
+    services[serviceName] = module
 end
 
 function ModulRCore:GetEventBus()
