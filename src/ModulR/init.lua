@@ -12,6 +12,7 @@ ModulRCore.__index = ModulRCore
 --|| Private Attributes ||--
 local services = {}
 local locked = false
+local toInit = {}
 
 --|| Constructor ||--
 function ModulRCore.new()
@@ -31,15 +32,8 @@ end
 --|| Public Methods ||--
 function ModulRCore:Initialize()
     locked = true -- Prevent further edits after init
-    for index, value in pairs(services) do
-        if not value.Initialize then
-            error("Service '" .. index .. "' does not have an Initialize method.")
-        end
-
-        local success, err = pcall(value.Initialize, value)
-        if not success then
-            warn("Failed to initialize service '" .. index .. "': " .. tostring(err))
-        end
+    for _, initFunc in pairs(toInit) do
+        initFunc()
     end
     return self
 end
@@ -76,14 +70,15 @@ function ModulRCore:AddService(serviceName: string, module: ModulRInterfaces.Ser
         module.Server = {}
     end
 
+    toInit[serviceName] = module.Initialize
     if RunService:IsServer() then
         services[serviceName] = module.Server
     elseif RunService:IsClient() then
         services[serviceName] = module.Client
     end
-    for _, method in pairs(module.Shared) do
+    for index, method in pairs(module.Shared or {}) do
         if type(method) == "function" then
-            services[serviceName][method] = method
+            services[serviceName][index] = method
         else
             error("Shared methods must be functions.")
         end

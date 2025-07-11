@@ -26,6 +26,13 @@ function LoggerService:Initialize()
     return self
 end
 
+function LoggerService:Destroy()
+    ModulR:GetEventBus():Unsubscribe("LoggerServiceInit", self)
+    ModulR:GetEventBus():Unsubscribe("TestServiceInit", self)
+    ModulR:GetEventBus():Unsubscribe("LevelServiceInit", self)
+    print("[LoggerService] - LoggerService destroyed.")
+end
+
 -- Methode Shared (donc peut importe ou tu add ton service, elle sera accessible)
 function LoggerService.Shared:ForceLog(message: string)
     print("[LoggerService] - " .. message)

@@ -16,24 +16,27 @@ function ModulREventBus:Destroy()
 end
 
 --|| Public Methods ||--
-function ModulREventBus:Subscribe(eventName: string, subscriberService: ModulRInterfaces.Service, callback: (any) -> any)
+function ModulREventBus:Subscribe(eventName: string, callback: (any) -> any)
     if not subscribers[eventName] then
         subscribers[eventName] = {}
     end
 
-    if not subscribers[eventName][subscriberService] then
-        subscribers[eventName][subscriberService] = {}
-    end
+    table.insert(subscribers[eventName], callback)
 
-    table.insert(subscribers[eventName][subscriberService], callback)
+    table.insert(subscribers[eventName], callback)
 end
 
-function ModulREventBus:Unsubscribe(eventName: string, subscriberService: ModulRInterfaces.Service)
-    if not subscribers[eventName] or not subscribers[eventName][subscriberService] then
+function ModulREventBus:Unsubscribe(eventName: string, callback: (any) -> any)
+    if not subscribers[eventName] then
         return
     end
 
-    subscribers[eventName][subscriberService] = nil
+    for i, cb in ipairs(subscribers[eventName]) do
+        if cb == callback then
+            table.remove(subscribers[eventName], i)
+            break
+        end
+    end
 end
 
 function ModulREventBus:Clear()
