@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 --|| ModulR ||--
 
 --|| Dependencies ||--
@@ -66,7 +67,27 @@ function ModulRCore:AddService(serviceName: string, module: ModulRInterfaces.Ser
     module.Name = serviceName
     module.Initialize = module.Initialize or function() end
     module.Destroy = module.Destroy or function() end
-    services[serviceName] = module
+
+    if not module.Client then
+        module.Client = {}
+    end
+
+    if not module.Server then
+        module.Server = {}
+    end
+
+    if RunService:IsServer() then
+        services[serviceName] = module.Server
+    elseif RunService:IsClient() then
+        services[serviceName] = module.Client
+    end
+    for _, method in pairs(module.Shared) do
+        if type(method) == "function" then
+            services[serviceName][method] = method
+        else
+            error("Shared methods must be functions.")
+        end
+    end
 end
 
 function ModulRCore:GetEventBus()
