@@ -22,8 +22,6 @@ function ModulREventBus:Subscribe(eventName: string, callback: (any) -> any)
     end
 
     table.insert(subscribers[eventName], callback)
-
-    table.insert(subscribers[eventName], callback)
 end
 
 function ModulREventBus:Unsubscribe(eventName: string, callback: (any) -> any)
@@ -48,14 +46,12 @@ function ModulREventBus:Broadcast(eventName)
         return
     end
 
-    for service, callbacks in pairs(subscribers[eventName]) do
-        for _, callback in ipairs(callbacks) do
-            local success, err = pcall(callback)
-            if not success then
-                warn("Error in event callback for '" .. eventName .. "': " .. tostring(err))
-            end
-        end
-    end
+   for _, callback in ipairs(subscribers[eventName]) do
+       local success, err = pcall(callback)
+       if not success then
+           warn("Error in event callback for '" .. eventName .. "': " .. tostring(err))
+       end
+   end
 end
 
 return ModulREventBus
